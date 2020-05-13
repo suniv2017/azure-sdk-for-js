@@ -1,0 +1,27 @@
+
+steps:
+
+- ${{ each artifact in parameters.Artifacts }}:
+  - pwsh: |
+      $Language = "$(Build.Repository.Name)".SubString("$(Build.Repository.Name)".LastIndexOf('-') + 1)
+      Import-Module "$(Build.SourcesDirectory)\eng\common\scripts\modules\Common-Functions" -ArgumentList "$Language", "$(Build.SourcesDirectory)"
+      $PkgProps = Get-PkgProperties -pkgName '${{artifact.name}}' -serviceName '${{parameters.ServiceDirectory}}'
+
+      Write-Host "Package Name: " $PkgProps["pkgName"]
+      Write-Host "Package Directory: " $PkgProps["pkgDirPath"]
+      if ($PkgProps["pkgVersion"] -eq $null) {
+        Write-Host "##[warning]Package Version not found"
+      } else {
+        Write-Host "Package Version: " $PkgProps["pkgVersion"]
+      }
+      if ($PkgProps["pkgReadMePath"] -eq $null) {
+        Write-Host "##[warning]Package Readme not found"
+      } else {
+        Write-Host "Package Readme: " $PkgProps["pkgReadMePath"]
+      }
+      if ($PkgProps["pkgChangeLogPath"] -eq $null) {
+        Write-Host "##[warning]Package Changelog not found"
+      } else {
+        Write-Host "Package Changelog: " $PkgProps["pkgChangeLogPath"]
+      }
+    displayName: 'Test ${{artifact.name}} properties'
